@@ -1,0 +1,22 @@
+{{template "head" .}}
+<body class="bg-base-100 text-base-content">
+<div class="flex flex-col min-h-screen">
+{{template "header" .}}
+<div class="m-4">
+    <button class="btn" hx-post="/hx/test" hx-swap="innerHTML">Hello World</button>
+    <h1 class="text-primary-content">{{.Title}}</h1>
+    <ul class="m-2">
+        {{range .Todos}}
+            {{if .Done}}
+                <li class="text-secondary-focus">{{.Title}}</li>
+            {{else}}
+                <li class="text-secondary-content">{{.Title}}</li>
+            {{end}}
+        {{end}}
+    </ul>
+    <script src="/public/app.js"></script>
+</div>
+{{template "footer" .}}
+</div>
+</body>
+
