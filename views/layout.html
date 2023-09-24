@@ -1,9 +1,15 @@
 {{template "head" .}}
 <body class="bg-base-100 text-base-content">
-<div class="flex flex-col min-h-screen">
+<div id="toast"></div>
+<div class="flex flex-col content-center items-center min-h-screen">
 {{template "header" .}}
-<div class="m-4">
-    <button class="btn" hx-post="/hx/test" hx-swap="innerHTML">Hello World</button>
+<div class="flex flex-col m-4 space-y-4 w-[720px]">
+    <form class="btn rounded-md" hx-target="#toast" hx-trigger="click" hx-post="/hx/toast" hx-swap="outerHTML" hx-include="#text"> 
+        Hello World
+    <input id="text" name="text" value="test"/>
+    </form>
+    <br>
+    <!-- <input id="text" class="self-center shadow-md shadow-base-200" name="text" value="test"/> -->
     <h1 class="text-primary-content">{{.Title}}</h1>
     <ul class="m-2">
         {{range .Todos}}
