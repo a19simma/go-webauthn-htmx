@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-const colors = require('tailwindcss/colors')
+const colors = require("tailwindcss/colors");
 
 module.exports = {
   content: ["views/**/*.{html,js}"],
@@ -14,30 +14,29 @@ module.exports = {
       {
         dark: {
           ...require("daisyui/src/theming/themes")["[data-theme=dark]"],
-          "primary": "#000000",
-          "secondary": "#03DAC6",
-          "accent": "#c084fc",
-          "neutral": "#1b192a",
+          primary: "#000000",
+          secondary: "#03DAC6",
+          accent: "#c084fc",
+          neutral: "#1b192a",
           "base-100": "#121212",
-          "info": "#93c5fd",
-          "success": "#bef264",
-          "warning": "#fef08a",
-          "error": "#cf6679",
+          info: "#93c5fd",
+          success: "#bef264",
+          warning: "#fef08a",
+          error: "#cf6679",
         },
         light: {
           ...require("daisyui/src/theming/themes")["[data-theme=light]"],
-          "primary": "#1c1917",
-          "secondary": "#9ca3af",
-          "accent": "#c084fc",
-          "neutral": "#1b192a",
+          primary: "#1c1917",
+          secondary: "#9ca3af",
+          accent: "#c084fc",
+          neutral: "#1b192a",
           "base-100": "#0c0a09",
-          "info": "#93c5fd",
-          "success": "#bef264",
-          "warning": "#fef08a",
-          "error": "#f87171",
+          info: "#93c5fd",
+          success: "#bef264",
+          warning: "#fef08a",
+          error: "#f87171",
         },
       },
-    ]
-  }
-}
-
+    ],
+  },
+};

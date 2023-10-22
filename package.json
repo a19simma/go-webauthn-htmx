@@ -1,5 +1,17 @@
 {
+  "name": "htmx-go",
+  "private": true,
+  "type": "module",
   "devDependencies": {
-    "daisyui": "^3.7.3"
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.4",
+    "daisyui": "^3.7.3",
+    "prettier": "3.0.3",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^8.2.1"
   }
 }

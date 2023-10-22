@@ -1,7 +1,9 @@
-<div onclick="toastclick(this)" id="toast" 
-  class="top-2 m-4 toast toast-top toast-center hover:cursor-pointer">
+<div
+  onclick="removeClick(this)"
+  id="toast"
+  class="absolute toast toast-top toast-center"
+>
   <div class="alert alert-success">
     <span>{{ . }}</span>
   </div>
 </div>
-
