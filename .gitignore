@@ -3,3 +3,4 @@ node_modules
 tmp
 *.db
 *.sqlite3
+dev.env

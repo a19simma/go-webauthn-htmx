@@ -11,6 +11,7 @@ import (
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 
 	"github.com/a19simma/vanilla-js/pkg/db"
 )
@@ -93,7 +94,10 @@ func RegisterAuthRoutes(auth fiber.Router) {
 func BeginLogin(c *fiber.Ctx) error {
 	user := db.User{Username: c.Params("username")}
 	log.Info().Msgf("%v", db.Users)
-	db.Users.Preload("Credentials").First(&user)
+	result := db.Users.Preload("Credentials").First(&user)
+	if result.RowsAffected == 0 {
+		return c.Status(404).SendString(fmt.Sprintf("User %s does not exist", c.Params("username")))
+	}
 
 	log.Debug().Any("User Logging in: ", user).Msg("")
 
@@ -126,7 +130,7 @@ func FinishLogin(c *fiber.Ctx) error {
 	}
 	response, err := body.Parse()
 	if err != nil {
-		log.Error().Err(err).Msg("")
+		log.Err(err)
 		return err
 	}
 
@@ -153,7 +157,7 @@ func FinishLogin(c *fiber.Ctx) error {
 	_, err = web.ValidateLogin(user, wSession, response)
 	if err != nil {
 		log.Error().Msgf("Failed to validate login: %s ", err)
-		return c.JSON(struct{ Status string }{Status: "Failed"})
+		return c.Status(401).SendString("Failed to login, incorrect credentials")
 	}
 	sess, err := db.LoginSession.Get(c)
 	if err != nil {
@@ -177,7 +181,8 @@ func FinishLogin(c *fiber.Ctx) error {
 }
 
 func BeginRegistration(c *fiber.Ctx) error {
-	existingUser := db.Users.Take(&db.User{Username: c.Params("username")})
+	user := db.User{Username: c.Params("username")}
+	existingUser := db.Users.First(&user)
 	if existingUser.RowsAffected > 0 {
 		return c.Status(409).SendString("Username already exists")
 	}
@@ -186,7 +191,10 @@ func BeginRegistration(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	user := db.User{Username: c.Params("username"), ID: id} // Find or create the new user
+	if user.Status != db.Open && user.Username != viper.Get("AUTH_ADMIN_EMAIl") {
+		return c.Status(401).SendString("Registration not allowed with this email")
+	}
+	user.ID = id // Find or create the new user
 	db.Users.Create(&user)
 	options, sessionData, err := web.BeginRegistration(user)
 	if err != nil {
@@ -222,8 +230,11 @@ func FinishRegistration(c *fiber.Ctx, username string) {
 	if err != nil {
 		// Handle Error and return.
 		log.Error().Msgf("Failed to register: %v", err)
-		c.Status(500).SendString("Failed to Register")
-		return
+		innerErr := c.Status(500).SendString("Failed to Register")
+		if err != nil {
+			log.Err(innerErr)
+		}
+
 	}
 
 	user := db.User{Username: c.Params("username")} // Get the user
@@ -256,6 +267,9 @@ func FinishRegistration(c *fiber.Ctx, username string) {
 	}
 
 	err = c.JSON("Registration Success")
+	if err != nil {
+		log.Err(err)
+	}
 	dCredential := db.Credentials{
 		ID:              credential.ID,
 		PublicKey:       credential.PublicKey,
@@ -269,8 +283,13 @@ func FinishRegistration(c *fiber.Ctx, username string) {
 
 	db.Users.Save(&dCredential)
 
-	// Pseudocode to add the user credential.
 	log.Print(user)
+	if user.Username == viper.Get("AUTH_ADMIN_EMAIL") {
+		user.Role = db.Admin
+	} else {
+		user.Role = db.Member
+	}
+	user.Status = db.Registered
 	db.Users.Save(&user)
 }
 

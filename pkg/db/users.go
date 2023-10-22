@@ -69,11 +69,36 @@ func (user User) WebAuthnCredentials() []webauthn.Credential {
 	return c
 }
 
+type RegistrationStatus int
+
+const (
+	Registered RegistrationStatus = iota
+	Open
+	Blocked
+)
+
+func (s RegistrationStatus) String() string {
+	return []string{"Registered", "Open", "Blocked"}[s]
+}
+
+type Role int
+
+const (
+	Admin Role = iota
+	Member
+)
+
+func (r Role) String() string {
+	return []string{"Admin", "Member"}[r]
+}
+
 type User struct {
-	ID          []byte `json:"id"`
-	Username    string `json:"username" gorm:"primarykey"`
+	ID          []byte `json:"id" gorm:"primarykey"`
+	Username    string `json:"username"`
 	Sessions    []Sessions
 	Credentials []Credentials
+	Role        Role               `gorm:"type:integer"`
+	Status      RegistrationStatus `gorm:"type:integer"`
 }
 
 type Credentials struct {

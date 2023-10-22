@@ -1,61 +1,61 @@
- <div class="card w-[32rem] p-8 bg-base-100 shadow-2xl">
-    <p class="py-4">Press ESC key or click the button below to close</p>
-    <div class="min-w-full form-control">
-      {{ if not .Status }}
-      <label class="label">
-        <span class="label-text">Enter your Email</span>
-      </label>
-    </div>
-    <input
-      id="usernameInput"
-      type="text"
-      placeholder="Type here"
-      class="input input-bordered w-full max-w-xs"
-    />
-    <div class="form-control w-full max-w-xs">
-      <label class="label">
-        <span id="statusLabel" class="label-text"></span>
-      </label>
-    </div>
-    {{else}}
-    <p>Logged in as: {{.Username}}</p>
-    {{end}}
-    <div class="modal-action">
-      {{ if not .Status }}
-      <button
-        hx-trigger="refreshModal"
-        hx-get="/hx/login"
-        hx-target="#login_container"
-        hx-swap="innerHTML"
-        onclick="loginClick('usernameInput', 'statusLabel', 'loginButton')"
-        id="loginButton"
-        class="btn"
-      >
-        Login
-      </button>
-      <button
-        hx-trigger="refreshModal"
-        hx-get="/hx/login"
-        hx-target="#login_container"
-        hx-swap="innerHTML"
-        onclick="registerClick('usernameInput', 'statusLabel', 'registerButton')"
-        id="registerButton"
-        class="btn"
-      >
-        Register
-      </button>
-      {{else}}
-      <button
-        hx-trigger="click"
-        hx-get="/auth/logout"
-        hx-target="#login_container"
-        hx-swap="innerHTML"
-        id="logoutButton"
-        class="btn"
-      >
-        Logout
-      </button>
-      {{end}}
-      <div class="w-full"></div>
-    </div>
+<div class="card w-[32rem] p-8 bg-base-100 shadow-2xl">
+  <p class="py-4">Press ESC key or click the button below to close</p>
+  <div class="min-w-full form-control">
+    {{ if not .Status }}
+    <label class="label">
+      <span class="label-text">Enter your Email</span>
+    </label>
   </div>
+  <input
+    id="usernameInput"
+    type="text"
+    placeholder="Type here"
+    class="input input-bordered w-full max-w-xs"
+  />
+  <div class="form-control w-full max-w-xs">
+    <label class="label">
+      <span id="statusLabel" class="label-text text-success"></span>
+    </label>
+  </div>
+  {{else}}
+  <p>Logged in as: {{.Username}}</p>
+  {{end}}
+  <div class="modal-action">
+    {{ if not .Status }}
+    <button
+      hx-trigger="refreshModal"
+      hx-get="/hx/login"
+      hx-target="#login_container"
+      hx-swap="innerHTML"
+      onclick="loginClick('usernameInput', 'statusLabel', 'loginButton')"
+      id="loginButton"
+      class="btn"
+    >
+      Login
+    </button>
+    <button
+      hx-trigger="refreshModal"
+      hx-get="/hx/login"
+      hx-target="#login_container"
+      hx-swap="innerHTML"
+      onclick="registerClick('usernameInput', 'statusLabel', 'registerButton')"
+      id="registerButton"
+      class="btn"
+    >
+      Register
+    </button>
+    {{else}}
+    <button
+      hx-trigger="click"
+      hx-get="/auth/logout"
+      hx-target="#login_container"
+      hx-swap="innerHTML"
+      id="logoutButton"
+      class="btn"
+    >
+      Logout
+    </button>
+    {{end}}
+    <div class="w-full"></div>
+  </div>
+</div>

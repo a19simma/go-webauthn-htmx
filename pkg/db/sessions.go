@@ -15,7 +15,7 @@ func Init() {
 
 	LoginSession = session.New(session.Config{
 		CookieSameSite: "strict",
-		Expiration:     time.Minute * 5,
+		Expiration:     time.Hour * 6,
 		Storage:        sessionStore,
 	})
 }

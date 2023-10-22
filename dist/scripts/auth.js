@@ -414,10 +414,14 @@
         return __awaiter(this, void 0, void 0, function* () {
             const usernameInput = document.getElementById(usernameEl);
             const statusLabel = document.getElementById(statusEl);
-            const btn = document.getElementById(btnId);
+            document.getElementById(btnId);
             const resp = yield fetch(`/auth/register/begin/${usernameInput.value}`);
             if (!resp.ok) {
-                return resp;
+                clearClasslist([usernameInput, statusLabel]);
+                usernameInput.classList.add("input-error");
+                statusLabel.classList.add("text-error");
+                statusLabel.innerHTML = yield resp.text();
+                return;
             }
             const registrationOptions = (yield resp.json()).publicKey;
             let attResp;
@@ -443,16 +447,17 @@
                 body: JSON.stringify(attResp),
             });
             if (!result.ok) {
+                clearClasslist([usernameInput, statusLabel]);
                 usernameInput.classList.add("input-error");
                 statusLabel.classList.add("text-error");
                 statusLabel.innerHTML = yield result.text();
             }
             else {
+                clearClasslist([usernameInput, statusLabel]);
                 usernameInput.classList.add("input-success");
                 statusLabel.classList.add("text-success");
                 statusLabel.innerHTML = "Success! You can now login.";
             }
-            btn.dispatchEvent(new Event("refreshModal"));
         });
     }
     window.registerClick = register;
@@ -461,7 +466,7 @@
             const usernameInput = document.getElementById(usernameEl);
             const statusLabel = document.getElementById(statusEl);
             const btn = document.getElementById(btnId);
-            const fetchLoginOptions = (username) => __awaiter(this, void 0, void 0, function* () { return fetch(`/auth/generate-authentication-options/${username}`).then((resp) => resp.json()); });
+            const fetchLoginOptions = (username) => __awaiter(this, void 0, void 0, function* () { return fetch(`/auth/generate-authentication-options/${username}`); });
             const verifyLogin = (attResp, username) => __awaiter(this, void 0, void 0, function* () {
                 return fetch(`/auth/verify-authentication/${username}`, {
                     method: "POST",
@@ -471,22 +476,39 @@
                     body: JSON.stringify(attResp),
                 });
             });
-            const options = yield fetchLoginOptions(usernameInput.value);
+            const resp = yield fetchLoginOptions(usernameInput.value);
+            if (!resp.ok) {
+                clearClasslist([usernameInput, statusLabel]);
+                usernameInput.classList.add("input-error");
+                statusLabel.classList.add("text-error");
+                statusLabel.innerHTML = yield resp.text();
+                return;
+            }
+            const options = (yield resp.json());
             let loginResp = yield startAuthentication(options.publicKey);
             let result = yield verifyLogin(loginResp, usernameInput.value);
             if (!result.ok) {
+                clearClasslist([usernameInput, statusLabel]);
                 usernameInput.classList.add("input-error");
                 statusLabel.classList.add("text-error");
                 statusLabel.innerHTML = yield result.text();
+                return;
             }
             else {
+                clearClasslist([usernameInput, statusLabel]);
                 usernameInput.classList.add("input-success");
                 statusLabel.classList.add("text-success");
-                statusLabel.innerHTML = "Success! You are now logged in.";
+                statusLabel.innerHTML = "Success! Redirecting...";
             }
             btn.dispatchEvent(new Event("refreshModal"));
         });
     }
     window.loginClick = login;
+    function clearClasslist(elements) {
+        elements.forEach((x) => (x.classList.value = x.classList.value
+            .split(" ")
+            .filter((y) => !y.includes("success") && !y.includes("error"))
+            .join(" ")));
+    }
 
 })();

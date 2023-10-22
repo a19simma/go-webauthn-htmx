@@ -2,10 +2,11 @@ package main
 
 import (
 	"embed"
-	"flag"
 	"io/fs"
 	"net/http"
+	"os"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/a19simma/vanilla-js/api"
 	"github.com/a19simma/vanilla-js/pkg/db"
 	"github.com/a19simma/vanilla-js/pkg/middleware"
@@ -24,22 +25,40 @@ var viewsFilesystem embed.FS
 //go:embed dist
 var dist embed.FS
 
+var config Config
+
+type Config struct {
+	BrevoKey    string `mapstructure:"AUTH_BREVO_APIKEY"`
+	SendgridKey string `mapstructure:"AUTH_SENDGRID_APIKEY"`
+	AdminEmail  string `mapstructure:"AUTH_ADMIN_EMAIL"`
+	LogLevel    string `mapstructure:"AUTH_LOGLEVEL"`
+	Env         string `mapstructure:"AUTH_ENV"`
+}
+
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	debug := flag.Bool("debug", true, "sets log level to debug")
 
-	flag.Parse()
-
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	if *debug {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	}
-
-	viper.SetConfigFile(".env")
+	viper.SetDefault("Env", "Dev")
+	viper.SetEnvPrefix("auth")
+	viper.AutomaticEnv()
+	viper.SetConfigFile("dev.env")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Error().Msgf("Failed to read config: %v", err)
+		log.Warn().Msgf("Failed to read config: %v", err)
 	}
+	err = viper.Unmarshal(&config)
+	if err != nil {
+		log.Err(err)
+	}
+	level, err := zerolog.ParseLevel(config.LogLevel)
+	if err != nil {
+		log.Err(err)
+	}
+	if viper.Get("Env") == "Dev" {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	zerolog.SetGlobalLevel(level)
 
 	db.Init()
 	db.InitUsers()
@@ -50,7 +69,11 @@ func main() {
 	httpViews := http.FS(files)
 
 	engine := html.NewFileSystem(httpViews, ".html")
-	engine.Debug(true)
+	if viper.Get("Env") == "Dev" {
+		engine.Debug(true)
+	}
+	engine.AddFuncMap(sprig.FuncMap())
+
 	app := fiber.New(fiber.Config{
 		Views: engine,
 	})
@@ -112,7 +135,25 @@ func main() {
 
 	app.Use(api.NewLoginRedirect())
 
-	app.Get("/", func(c *fiber.Ctx) error { return c.Render("index", nil) })
+	api.RegisterUserRoutes(app.Group("/api/users"))
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		users := []db.User{}
+		result := db.Users.Find(&users).Select("ID", "Username", "Role", "Status")
+		if result.Error != nil {
+			log.Err(result.Error)
+		}
+		for _, v := range users {
+			log.Print(string(v.ID))
+			log.Print(v.Status)
+			log.Print(v.Username)
+			log.Print(v.Role)
+		}
+		return c.Render("layout", struct {
+			Accounts []db.User
+			Title    string
+		}{users, "Manage Accounts"})
+	})
 
 	log.Fatal().Err(app.Listen(":4200"))
 }

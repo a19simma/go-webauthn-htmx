@@ -5,27 +5,26 @@
     <div class="flex flex-col content-center items-center min-h-screen">
       {{template "header" .}}
       <div class="flex flex-col m-4 space-y-4 w-[720px]">
-        <form
-          class="btn rounded-md"
-          hx-target="#toast"
-          hx-trigger="click"
-          hx-post="/hx/toast"
-          hx-swap="outerHTML"
-          hx-include="#text"
-        >
-          Hello World
-          <input id="text" name="text" value="test" />
-        </form>
-        <br />
-        <!-- <input id="text" class="self-center shadow-md shadow-base-200" name="text" value="test"/> -->
-        <h1 class="text-primary-content">{{.Title}}</h1>
-        <ul class="m-2">
-          {{range .Todos}} {{if .Done}}
-          <li class="text-secondary-focus">{{.Title}}</li>
-          {{else}}
-          <li class="text-secondary-content">{{.Title}}</li>
-          {{end}} {{end}}
-        </ul>
+        <h1 class="p-4 rounded-s bg-base-300 text-primary-content text-2xl text-center">{{.Title}}</h1>
+        <div class="overflow-x-auto">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Role</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+          {{range .Accounts}}
+          <tr class="text-secondary-content hover">
+            <td>{{.Username}}</td><td>{{.Status}}</td><td>{{.Role}}</td>
+            <td><div class="join"><button hx-confirm="Do you really want to delete {{.Username}}?" hx-swap="outerHTML" hx-target="closest tr" hx-delete="/api/users/{{urlquery (printf "%s" .ID)}}" class="btn btn-error join-item">Delete</button></div></td>
+          </tr>
+          {{end}}
+    </tbody>
+  </table>
       </div>
       {{template "footer" }}
     </div>
