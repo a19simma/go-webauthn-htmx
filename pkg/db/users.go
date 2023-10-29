@@ -66,6 +66,7 @@ func (userdbimpl UserDbImpl) GetUserSessions(user User) (Sessions, error) {
 }
 
 func (userdbimpl UserDbImpl) CreateUser(user User) error {
+	log.Printf("saving user: %v", user)
 	db.Save(user)
 	return nil
 }

@@ -17,6 +17,7 @@ var (
 	userDb                    db.UserDb
 	ErrAlreadyExists          = errors.New("already exists")
 	ErrRegistrationNotAllowed = errors.New("registration not allowed")
+	ErrLoginBlocked           = errors.New("login has been blocked for this user")
 )
 
 type Auth interface {
@@ -62,6 +63,9 @@ func (authimpl AuthImpl) BeginLogin(username string) (*protocol.CredentialAssert
 	user, err := userDb.GetUser(username)
 	if err != nil {
 		return nil, err
+	}
+	if user.Status == db.Blocked {
+		return nil, ErrLoginBlocked
 	}
 	log.Printf("User Logging in: %v", user)
 
@@ -124,17 +128,19 @@ func (authImpl AuthImpl) BeginRegistration(username string) (*protocol.Credentia
 		log.Print(user)
 	}
 
-	id := make([]byte, 32)
-	_, err = rand.Read(id)
-	if err != nil {
-		return nil, err
+	if len(user.ID) == 0 {
+		id := make([]byte, 32)
+		_, err = rand.Read(id)
+		if err != nil {
+			return nil, err
+		}
+		user.ID = id
 	}
 
 	if user.Status != db.Open && user.Username != viper.Get("AUTH_ADMIN_EMAIl") {
 		return nil, ErrRegistrationNotAllowed
 	}
 
-	user.ID = id
 	err = userDb.CreateUser(*user)
 	if err != nil {
 		return nil, err
