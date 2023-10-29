@@ -53,15 +53,16 @@ func main() {
 	level, err := zerolog.ParseLevel(config.LogLevel)
 	if err != nil {
 		log.Err(err)
-	}
-	if viper.Get("Env") == "Dev" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
+		if viper.Get("Env") == "Dev" {
+			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+		}
 
-	zerolog.SetGlobalLevel(level)
+		zerolog.SetGlobalLevel(level)
+
+	}
 
 	db.Init()
-	db.InitUsers()
+	userDb := db.InitUsers()
 	files, err := fs.Sub(viewsFilesystem, "views")
 	if err != nil {
 		log.Error().Msg("Failed to open subdir of filesystem")
@@ -131,18 +132,14 @@ func main() {
 
 	api.RegisterHXRoutes(app.Group("/hx"))
 
-	api.RegisterAuthRoutes(app.Group("/auth"))
+	api.RegisterAuthRoutes(app.Group("/auth"), &userDb)
 
 	app.Use(api.NewLoginRedirect())
 
-	api.RegisterUserRoutes(app.Group("/api/users"))
+	api.RegisterUserRoutes(app.Group("/api/users"), &userDb)
 
 	app.Get("/", func(c *fiber.Ctx) error {
-		users := []db.User{}
-		result := db.Users.Find(&users).Select("ID", "Username", "Role", "Status")
-		if result.Error != nil {
-			log.Err(result.Error)
-		}
+		users := userDb.GetUsers()
 		for _, v := range users {
 			log.Print(string(v.ID))
 			log.Print(v.Status)

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/url"
 
 	"github.com/a19simma/vanilla-js/pkg/db"
@@ -8,39 +9,24 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func RegisterUserRoutes(router fiber.Router) {
+func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
 	router.Delete("/:id", func(c *fiber.Ctx) error {
 		id, err := url.QueryUnescape(c.Params("id"))
 		if err != nil {
 			log.Err(err)
 			return err
 		}
-		userId := []byte(id)
-		log.Debug().Msgf("Deleting user with id: %s", id)
-		result := db.Users.Where("user_id = ?", userId).Delete(db.Credentials{})
-		if result.Error != nil {
-			log.Err(result.Error)
-		}
-		if result.RowsAffected == 0 {
-			return c.SendStatus(404)
-		}
-
-		sess, err := db.LoginSession.Get(c)
+		err = userDb.DeleteUser(id)
 		if err != nil {
 			log.Err(err)
+			switch {
+			case errors.Is(err, db.ErrNoResults):
+				return c.SendStatus(404)
+			default:
+				return c.SendStatus(500)
+			}
 		}
-		err = sess.Destroy()
-		if err != nil {
-			log.Err(err)
-		}
-
-		result = db.Users.Where("id = ?", userId).Delete(db.User{})
-		if result.Error != nil {
-			log.Err(result.Error)
-		}
-		if result.RowsAffected == 0 {
-			return c.SendStatus(404)
-		}
+		db.DeleteLoginSession(c)
 		return nil
 	})
 }

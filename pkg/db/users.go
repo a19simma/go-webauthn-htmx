@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"strings"
 	"time"
 
@@ -12,19 +13,115 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-var Users *gorm.DB
+var (
+	ErrNoResults = errors.New("no results found")
+	db           *gorm.DB
+)
 
-func InitUsers() {
-	users, err := gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
+type UserDb interface {
+	GetUser(string) (*User, error)
+	GetUsers() []User
+	DeleteUser(string) error
+	CreateUser(User) error
+	CreateSession(Sessions) error
+	DeleteSessions(User) error
+	GetUserSession(User) Sessions
+	GetUserCredentials(User) []Credentials
+	CreateCredentials(Credentials) error
+}
+
+type UserDbImpl struct{}
+
+func (userdbimpl UserDbImpl) CreateCredentials(c Credentials) error {
+	db.Save(c)
+	return nil
+}
+
+func (userdbimpl UserDbImpl) GetUserSession(user User) Sessions {
+	session := Sessions{}
+	db.Where("user_id = ?", user.ID).First(&session)
+	return session
+}
+
+func (userdbimpl UserDbImpl) GetUserCredentials(user User) []Credentials {
+	credentials := []Credentials{}
+	db.Where("user_id = ?", user.ID).Find(&credentials)
+	return credentials
+}
+
+func (userdbimpl UserDbImpl) GetUsers() []User {
+	users := []User{}
+	db.Find(&users).Select("ID", "Username", "Role", "Status")
+	return users
+}
+
+func (userdbimpl UserDbImpl) DeleteSessions(user User) error {
+	db.Where("user_id = ?", user.ID).Delete(&Sessions{})
+	return nil
+}
+func (userdbimpl UserDbImpl) GetUserSessions(user User) (Sessions, error) {
+	session := &Sessions{}
+	db.Where("user_id = ?", user.ID).First(&session)
+	return *session, nil
+}
+
+func (userdbimpl UserDbImpl) CreateUser(user User) error {
+	db.Save(user)
+	return nil
+}
+func (userdbimpl UserDbImpl) CreateSession(session Sessions) error {
+	db.Save(session)
+	return nil
+}
+
+func InitUsers() UserDbImpl {
+	usersDb, err := gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal().Msg("Failed to open connection to db")
 	}
-	Users = users
+	db = usersDb
 
-	err = Users.AutoMigrate(&Sessions{}, &Credentials{}, &User{}, &Registration{})
+	err = db.AutoMigrate(&Sessions{}, &Credentials{}, &User{}, &Registration{})
 	if err != nil {
 		log.Fatal().Msgf("Failed to migrate schema: %v", err.Error())
 	}
+	return UserDbImpl{}
+}
+
+func (d UserDbImpl) GetUser(username string) (*User, error) {
+	log.Print("Hello from getUser")
+	user := User{Username: username}
+	result := db.Where(user).Preload("Credentials").First(&user)
+	if result.RowsAffected == 0 {
+		log.Printf("No results found for user %s", username)
+		return nil, ErrNoResults
+	}
+
+	return &user, nil
+}
+
+func (d UserDbImpl) DeleteUser(id string) error {
+	userId := []byte(id)
+	log.Debug().Msgf("Deleting user with id: %s", id)
+	result := db.Where("user_id = ?", userId).Delete(Credentials{})
+	if result.Error != nil {
+		log.Err(result.Error)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		log.Debug().Str("UserId", id).Msg("Found no credentials to delete to delete")
+	}
+
+	result = db.Where("id = ?", userId).Delete(User{})
+	if result.Error != nil {
+		log.Err(result.Error)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return ErrNoResults
+	}
+
+	return nil
 }
 
 func (user User) WebAuthnID() []byte {
