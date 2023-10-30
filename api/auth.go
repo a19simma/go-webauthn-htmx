@@ -44,7 +44,7 @@ func RegisterAuthRoutes(r fiber.Router, userDb db.UserDb) {
 		if err != nil {
 			return err
 		}
-		_, err = db.GetLoginSession(c)
+		_, err = db.GetLoginSession(c, c.Params("username"))
 		if err != nil {
 			log.Err(err)
 		}
@@ -75,7 +75,7 @@ func RegisterAuthRoutes(r fiber.Router, userDb db.UserDb) {
 			return err
 		}
 
-		_, err = db.GetLoginSession(c)
+		_, err = db.GetLoginSession(c, c.Params("username"))
 		if err != nil {
 			return err
 		}
@@ -88,16 +88,10 @@ func RegisterAuthRoutes(r fiber.Router, userDb db.UserDb) {
 			return c.SendStatus(204)
 		}
 
-		dbsess, err := db.GetLoginSession(c)
+		username, err := db.ValidateLoginSession(c)
 		if err != nil {
 			return c.SendStatus(204)
 		}
-
-		if dbsess.ID() != string(s) {
-			return c.SendStatus(412)
-		}
-
-		username := dbsess.Get("username")
 
 		return c.SendString(fmt.Sprint(username))
 	})
@@ -118,16 +112,11 @@ func CheckLoginStatus(c *fiber.Ctx) (string, error) {
 		return "", errors.New("Session Cookie was not present")
 	}
 
-	dbsess, err := db.GetLoginSession(c)
+	username, err := db.ValidateLoginSession(c)
 	if err != nil {
-		return "", errors.New("Session Was not found in db")
+		log.Err(err)
+		return "", err
 	}
-
-	if dbsess.ID() != string(s) {
-		return "", errors.New("Session did not match the one in db")
-	}
-
-	username := dbsess.Get("username").(string)
 	return username, nil
 }
 
@@ -137,7 +126,7 @@ func NewLoginRedirect() fiber.Handler {
 		if len(s) == 0 {
 			return c.Redirect("/login", 302)
 		}
-		err := db.ValidateLoginSession(c)
+		_, err := db.ValidateLoginSession(c)
 		if err != nil {
 			log.Printf("failed to validate login: %v", err)
 			return c.Redirect("/login", 302)

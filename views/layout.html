@@ -1,4 +1,5 @@
 {{template "head" }}
+
 <body>
   <div id="toast" class="hidden transition ease-out"></div>
   <div class="bg-base-100 text-base-content">
@@ -7,34 +8,48 @@
       <div class="flex flex-col m-4 space-y-4 w-[720px]">
         <h1 class="p-4 rounded-s bg-base-300 text-primary-content text-2xl text-center">{{.Title}}</h1>
         <div class="overflow-x-auto">
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Email</th>
-        <th>Status</th>
-        <th>Role</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-          {{range .Accounts}}
-          <tr class="text-secondary-content hover">
-            <td>{{.Username}}</td><td>{{.Status}}</td><td>{{.Role}}</td>
-            <td><div class="join"><button hx-confirm="Do you really want to delete {{.Username}}?" hx-swap="outerHTML" hx-target="closest tr" hx-delete="/api/users/{{urlquery (printf "%s" .ID)}}" class="btn btn-error join-item">Delete</button></div>
-              {{if ne .Status 2}}
-              <div class="join"><button  hx-swap="outerHTML" hx-target="closest tr" hx-post="/api/users/{{.Username}}/block" class="btn btn-info join-item">Block</button></div>{{else}}
-              <div class="join"><button  hx-swap="outerHTML" hx-target="closest tr" hx-post="/api/users/{{.Username}}/unblock" class="btn btn-info join-item">UnBlock</button></div>
-              {{end}}</td>
-          </tr>
-          {{end}}
-    </tbody>
-  </table>
-  <form class="flex">
-  <input name="username" type="text" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
-  <div class="ml-auto self-end"><button hx-post="/api/users" class="btn btn-success">Add User</button></div>
-  </form>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Role</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {{range .Accounts}}
+              <tr class="text-secondary-content hover">
+                <td>{{.Username}}</td>
+                <td>{{.Status}}</td>
+                <td>{{.Role}}</td>
+                <td class="flex justify-end">
+                  <div>
+                    <button hx-confirm="Do you really want to delete {{.Username}}?" hx-swap="outerHTML"
+                      hx-target="closest tr" hx-delete="/api/users/{{urlquery (printf " %s" .ID)}}"
+                      class="btn btn-error join-item">Delete</button>
+                    {{if ne .Status 2}}
+                    {{if ne .Role 0 }}
+                    <button hx-swap="outerHTML" hx-target="closest tr" hx-post="/hx/users/{{.Username}}/block"
+                      class="btn btn-info">Block</button>
+                    {{end }}
+                    {{else}}
+                    <button hx-swap="outerHTML" hx-target="closest tr" hx-post="/hx/users/{{.Username}}/unblock"
+                      class="btn btn-info">UnBlock</button>
+                    {{end}}
+                  </div>
+                </td>
+              </tr>
+              {{end}}
+            </tbody>
+          </table>
+          <form class="flex">
+            <input name="username" type="text" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
+            <div class="ml-auto pr-4 self-end"><button hx-post="/api/users" class="btn btn-success">Add User</button>
+            </div>
+          </form>
+        </div>
+        {{template "footer" }}
       </div>
-      {{template "footer" }}
     </div>
-  </div>
 </body>

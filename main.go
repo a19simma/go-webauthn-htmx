@@ -122,6 +122,8 @@ func main() {
 			Status: false,
 		}
 		if err != nil {
+			log.Print(err)
+			log.Printf("login status: %v", status)
 			return c.Render("login", status)
 		}
 		status.Username = username

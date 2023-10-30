@@ -1,0 +1,20 @@
+<tr class="text-secondary-content hover">
+  <td>{{.Username}}</td>
+  <td>{{.Status}}</td>
+  <td>{{.Role}}</td>
+  <td class="flex justify-end">
+    <div>
+      <button hx-confirm="Do you really want to delete {{.Username}}?" hx-swap="outerHTML" hx-target="closest tr"
+        hx-delete="/api/users/{{urlquery (printf " %s" .ID)}}" class="btn btn-error join-item">Delete</button>
+      {{if ne .Status 2}}
+      {{if ne .Role 0 }}
+      <button hx-swap="outerHTML" hx-target="closest tr" hx-post="/hx/users/{{.Username}}/block"
+        class="btn btn-info">Block</button>
+      {{end }}
+      {{else}}
+      <button hx-swap="outerHTML" hx-target="closest tr" hx-post="/hx/users/{{.Username}}/unblock"
+        class="btn btn-info">UnBlock</button>
+      {{end}}
+    </div>
+  </td>
+</tr>

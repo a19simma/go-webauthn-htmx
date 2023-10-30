@@ -33,13 +33,13 @@ func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
 		}
 		return nil
 	})
-	router.Post("/:id/block", func(c *fiber.Ctx) error {
-		id, err := url.QueryUnescape(c.Params("id"))
+	router.Post("/:username/block", func(c *fiber.Ctx) error {
+		username, err := url.QueryUnescape(c.Params("username"))
 		if err != nil {
 			log.Err(err)
 			return err
 		}
-		user, err := userDb.GetUser(id)
+		user, err := userDb.GetUser(username)
 		if err != nil {
 			log.Err(err)
 			switch {
@@ -54,15 +54,17 @@ func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
 		if err != nil {
 			return err
 		}
-		return nil
+		user.Credentials = nil
+		log.Printf("blocked user: %s", user.Username)
+		return c.JSON(user)
 	})
-	router.Post("/:id/unblock", func(c *fiber.Ctx) error {
-		id, err := url.QueryUnescape(c.Params("id"))
+	router.Post("/:username/unblock", func(c *fiber.Ctx) error {
+		username, err := url.QueryUnescape(c.Params("username"))
 		if err != nil {
 			log.Err(err)
 			return err
 		}
-		user, err := userDb.GetUser(id)
+		user, err := userDb.GetUser(username)
 		if err != nil {
 			log.Err(err)
 			switch {
@@ -82,7 +84,9 @@ func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
 		if err != nil {
 			return err
 		}
-		return nil
+		user.Credentials = nil
+		log.Printf("unblocked user: %s", user.Username)
+		return c.JSON(user)
 	})
 
 	router.Post("/", func(c *fiber.Ctx) error {

@@ -36,11 +36,12 @@ func DeleteLoginSession(c *fiber.Ctx) error {
 	return nil
 }
 
-func GetLoginSession(c *fiber.Ctx) (*session.Session, error) {
+func GetLoginSession(c *fiber.Ctx, username string) (*session.Session, error) {
 	sess, err := LoginSession.Get(c)
 	if err != nil {
 		return nil, err
 	}
+	sess.Set("username", username)
 	err = sess.Save()
 	if err != nil {
 		return nil, err
@@ -48,16 +49,19 @@ func GetLoginSession(c *fiber.Ctx) (*session.Session, error) {
 	return sess, nil
 }
 
-func ValidateLoginSession(c *fiber.Ctx) error {
+// Validates the Session attached to input context
+// returns the username or error
+func ValidateLoginSession(c *fiber.Ctx) (username string, err error) {
 	s := c.Request().Header.Cookie("session_id")
 	sess, err := LoginSession.Get(c)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if sess.ID() != string(s) {
-		return errors.New("sessions did not match")
+		return "", errors.New("sessions did not match")
 	}
+	username = sess.Get("username").(string)
 
-	return nil
+	return username, nil
 }
