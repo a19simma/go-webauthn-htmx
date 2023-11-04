@@ -97,11 +97,18 @@ func (authimpl AuthImpl) BeginLogin(username string) (*protocol.CredentialAssert
 }
 
 func InitAuth(uDb db.UserDb) (Auth, error) {
-	wconfig := &webauthn.Config{
-		RPDisplayName: "Go Webauthn",                     // Display Name for your site
-		RPID:          "localhost",                       // Generally the FQDN for your site
-		RPOrigins:     []string{"http://localhost:4200"}, // The origin URLs allowed for WebAuthn requests
+	origins := []string{"http://localhost:4200"}
+	o := viper.GetString("AUTH_ORIGIN")
+	if len(o) != 0 {
+		origins = append(origins, o)
 	}
+	wconfig := &webauthn.Config{
+		RPDisplayName: "Go Webauthn", // Display Name for your site
+		RPID:          "localhost",   // Generally the FQDN for your site
+		RPOrigins:     origins,       // The origin URLs allowed for WebAuthn requests
+	}
+
+	log.Info().Msgf("allowed origins: %v", origins)
 
 	web, err := webauthn.New(wconfig)
 	if err != nil {

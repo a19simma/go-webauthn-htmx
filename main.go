@@ -33,6 +33,7 @@ type Config struct {
 	AdminEmail  string `mapstructure:"AUTH_ADMIN_EMAIL"`
 	LogLevel    string `mapstructure:"AUTH_LOGLEVEL"`
 	Env         string `mapstructure:"AUTH_ENV"`
+	Origin      string `mapstructure: "AUTH_ORIGIN"`
 }
 
 func main() {

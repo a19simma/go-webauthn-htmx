@@ -53,6 +53,9 @@ func GetLoginSession(c *fiber.Ctx, username string) (*session.Session, error) {
 // returns the username or error
 func ValidateLoginSession(c *fiber.Ctx) (username string, err error) {
 	s := c.Request().Header.Cookie("session_id")
+	if len(s) == 0 {
+		return "", errors.New("no session found")
+	}
 	sess, err := LoginSession.Get(c)
 	if err != nil {
 		return "", err
@@ -61,11 +64,13 @@ func ValidateLoginSession(c *fiber.Ctx) (username string, err error) {
 	if sess.ID() != string(s) {
 		return "", errors.New("sessions did not match")
 	}
-	username = sess.Get("username").(string)
+	username, ok := sess.Get("username").(string)
+	if !ok {
+		return "", errors.New("could not parse username from session")
+	}
 	user := &User{}
 	db.Where("Username = ?", username).First(&user)
 	if user.ID == nil {
-		log.Info().Str("Username", username).Str("Session", string(s)).Send()
 		return username, errors.New("Username does not exist")
 	}
 
