@@ -39,13 +39,12 @@ func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
 	viper.SetDefault("Env", "Dev")
-	viper.SetEnvPrefix("auth")
-	viper.AutomaticEnv()
 	viper.SetConfigFile("dev.env")
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Warn().Msgf("Failed to read config: %v", err)
 	}
+	viper.AutomaticEnv()
 	err = viper.Unmarshal(&config)
 	if err != nil {
 		log.Err(err)
