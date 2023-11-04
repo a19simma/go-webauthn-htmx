@@ -4,7 +4,7 @@ webauthn protocal to achieve passwordless login.
 
 
 
-# Following are some screenshots of the UI and how
+# Following are some screenshots of the UI
 
 ![Login Page](./img/login.png)
 
