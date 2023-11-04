@@ -62,6 +62,12 @@ func ValidateLoginSession(c *fiber.Ctx) (username string, err error) {
 		return "", errors.New("sessions did not match")
 	}
 	username = sess.Get("username").(string)
+	user := &User{}
+	db.Where("Username = ?", username).First(&user)
+	if user.ID == nil {
+		log.Info().Str("Username", username).Str("Session", string(s)).Send()
+		return username, errors.New("Username does not exist")
+	}
 
 	return username, nil
 }

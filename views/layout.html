@@ -26,7 +26,7 @@
                 <td class="flex justify-end">
                   <div>
                     <button hx-confirm="Do you really want to delete {{.Username}}?" hx-swap="outerHTML"
-                      hx-target="closest tr" hx-delete="/api/users/{{urlquery (printf " %s" .ID)}}"
+                      hx-target="closest tr" hx-delete="/api/users/{{urlquery (print .Username)}}"
                       class="btn btn-error join-item">Delete</button>
                     {{if ne .Status 2}}
                     {{if ne .Role 0 }}
@@ -43,11 +43,7 @@
               {{end}}
             </tbody>
           </table>
-          <form class="flex">
-            <input name="username" type="text" placeholder="Type here" class="input input-bordered w-full max-w-xs" />
-            <div class="ml-auto pr-4 self-end"><button hx-post="/api/users" class="btn btn-success">Add User</button>
-            </div>
-          </form>
+          {{template "components/addUserForm"}}
         </div>
         {{template "footer" }}
       </div>

@@ -5,19 +5,20 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/a19simma/vanilla-js/pkg/db"
+	"github.com/a19simma/go-webauthn-htmx/pkg/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
 
 func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
-	router.Delete("/:id", func(c *fiber.Ctx) error {
-		id, err := url.QueryUnescape(c.Params("id"))
+	router.Delete("/:username", func(c *fiber.Ctx) error {
+		username, err := url.QueryUnescape(c.Params("username"))
+		log.Print(username)
 		if err != nil {
 			log.Err(err)
 			return err
 		}
-		err = userDb.DeleteUser(id)
+		err = userDb.DeleteUser(username)
 		if err != nil {
 			log.Err(err)
 			switch {
@@ -26,10 +27,6 @@ func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
 			default:
 				return c.SendStatus(500)
 			}
-		}
-		err = db.DeleteLoginSession(c)
-		if err != nil {
-			return err
 		}
 		return nil
 	})
@@ -94,8 +91,7 @@ func RegisterUserRoutes(router fiber.Router, userDb db.UserDb) {
 		log.Printf("username: %s", username)
 
 		if len(username) == 0 {
-			c.Status(400)
-			return errors.New("no username")
+			return c.Status(400).SendString("no username")
 		}
 		id := make([]byte, 32)
 		_, err := rand.Read(id)

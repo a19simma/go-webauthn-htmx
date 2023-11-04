@@ -3,6 +3,7 @@ const colors = require("tailwindcss/colors");
 
 module.exports = {
   content: ["views/**/*.{html,js}"],
+  safelist: ["input-error", "input-success"],
   theme: {
     extend: {},
   },

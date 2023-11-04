@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/a19simma/vanilla-js/pkg/db"
+	"github.com/a19simma/go-webauthn-htmx/pkg/db"
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 )
@@ -55,7 +55,7 @@ func RegisterHXRoutes(hx fiber.Router) {
 		return c.SendStatus(200)
 	})
 	hx.Post("/users/:username/block", func(c *fiber.Ctx) error {
-		url := fmt.Sprintf("http://localhost:4200/api/users/%s/block", c.Params("username"))
+		url := fmt.Sprintf("%s/api/users/%s/block", c.BaseURL(), c.Params("username"))
 		log.Print(url)
 		agent := fiber.Post(url)
 		agent.Cookie("session_id", c.Cookies("session_id"))
@@ -87,7 +87,7 @@ func RegisterHXRoutes(hx fiber.Router) {
 			})
 	})
 	hx.Post("/users/:username/unblock", func(c *fiber.Ctx) error {
-		url := fmt.Sprintf("http://localhost:4200/api/users/%s/unblock", c.Params("username"))
+		url := fmt.Sprintf("%s/api/users/%s/unblock", c.BaseURL(), c.Params("username"))
 		agent := fiber.Post(url)
 		agent.Cookie("session_id", c.Cookies("session_id"))
 		status, body, errs := agent.Bytes()
@@ -115,6 +115,38 @@ func RegisterHXRoutes(hx fiber.Router) {
 				Status:   user.Status,
 				Username: user.Username,
 				Role:     user.Role,
+			})
+	})
+	hx.Post("/users", func(c *fiber.Ctx) error {
+		url := fmt.Sprintf("%s/api/users", c.BaseURL())
+		agent := fiber.Post(url)
+		agent.Cookie("session_id", c.Cookies("session_id"))
+		args := fiber.AcquireArgs()
+		args.Set("username", c.FormValue("username"))
+		agent.Form(args)
+		status, body, errs := agent.Bytes()
+		if len(errs) > 0 {
+			for _, v := range errs {
+				log.Err(v)
+			}
+		}
+		statusText := string(body)
+		log.Print(status)
+		var statusState string
+		switch {
+		case status < 299:
+			statusState = "succes"
+		default:
+			statusState = "error"
+		}
+
+		return c.Render("components/addUserForm",
+			struct {
+				Status     string
+				StatusText string
+			}{
+				Status:     statusState,
+				StatusText: statusText,
 			})
 	})
 }

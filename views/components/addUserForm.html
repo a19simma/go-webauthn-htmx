@@ -1,0 +1,21 @@
+<form class="flex justify-center">
+  <div class="form-control px-4">
+    <input
+      name="username"
+      type="text"
+      placeholder="Type here"
+      class="input input-bordered {{if .Status}}input-{{.Status}}{{end}} w-full max-w-xs"
+    />
+    <label class="label">
+      <span class="label-text-alt">{{.StatusText}}</span>
+    </label>
+  </div>
+  <button
+    hx-post="/hx/users"
+    hx-target="closest form"
+    hx-swap="outerHTML"
+    class="btn btn-success"
+  >
+    Add User
+  </button>
+</form>

@@ -1,9 +1,8 @@
-module github.com/a19simma/vanilla-js
+module github.com/a19simma/go-webauthn-htmx
 
 go 1.21
 
 require (
-	github.com/a-h/templ v0.2.364
 	github.com/getbrevo/brevo-go v1.0.0
 	github.com/go-webauthn/webauthn v0.8.6
 	github.com/gofiber/fiber/v2 v2.49.2

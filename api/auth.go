@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/rs/zerolog/log"
 
-	auth "github.com/a19simma/vanilla-js/pkg"
-	"github.com/a19simma/vanilla-js/pkg/db"
+	auth "github.com/a19simma/go-webauthn-htmx/pkg"
+	"github.com/a19simma/go-webauthn-htmx/pkg/db"
 )
 
 var (

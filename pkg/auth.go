@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/a19simma/vanilla-js/pkg/db"
+	"github.com/a19simma/go-webauthn-htmx/pkg/db"
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/rs/zerolog/log"

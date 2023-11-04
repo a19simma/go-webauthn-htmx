@@ -7,9 +7,9 @@ import (
 	"os"
 
 	"github.com/Masterminds/sprig/v3"
-	"github.com/a19simma/vanilla-js/api"
-	"github.com/a19simma/vanilla-js/pkg/db"
-	"github.com/a19simma/vanilla-js/pkg/middleware"
+	"github.com/a19simma/go-webauthn-htmx/api"
+	"github.com/a19simma/go-webauthn-htmx/pkg/db"
+	"github.com/a19simma/go-webauthn-htmx/pkg/middleware"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -143,7 +143,7 @@ func main() {
 	app.Get("/", func(c *fiber.Ctx) error {
 		users := userDb.GetUsers()
 		for _, v := range users {
-			log.Print(string(v.ID))
+			log.Print(v.ID)
 			log.Print(v.Status)
 			log.Print(v.Username)
 			log.Print(v.Role)

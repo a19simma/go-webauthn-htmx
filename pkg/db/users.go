@@ -101,16 +101,25 @@ func (d UserDbImpl) GetUser(username string) (*User, error) {
 	return &user, nil
 }
 
-func (d UserDbImpl) DeleteUser(id string) error {
-	userId := []byte(id)
-	log.Debug().Msgf("Deleting user with id: %s", id)
+func (d UserDbImpl) DeleteUser(username string) error {
+	user := User{}
+	db.Select("Id").Where("username = ?", username).First(&user)
+	userId := user.ID
+	log.Debug().Msgf("Deleting user with username: %v", username)
 	result := db.Where("user_id = ?", userId).Delete(Credentials{})
 	if result.Error != nil {
 		log.Err(result.Error)
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		log.Debug().Str("UserId", id).Msg("Found no credentials to delete to delete")
+		log.Debug().Str("UserId", string(userId)).Msg("Found no credentials to delete")
+	}
+
+	var users []User
+	log.Debug().Msgf("incoming id %v", userId)
+	db.Select("Id", "Username").Find(&users)
+	for _, u := range users {
+		log.Debug().Msgf("db Id: %v , username %v", u.ID, u.Username)
 	}
 
 	result = db.Where("id = ?", userId).Delete(User{})
@@ -119,6 +128,7 @@ func (d UserDbImpl) DeleteUser(id string) error {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
+		log.Debug().Msg("User Id was not found")
 		return ErrNoResults
 	}
 
